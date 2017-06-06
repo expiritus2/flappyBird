@@ -37,8 +37,10 @@ public class GroundBody extends Sprite {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
+        fixtureDef.filter.categoryBits = GameInfo.GROUND;
 
         Fixture fixture =  body.createFixture(fixtureDef);
+        fixture.setUserData("Ground");
 
         shape.dispose();
     }

@@ -18,6 +18,8 @@ public class Bird extends Sprite{
     private World world;
     private Body body;
 
+    private boolean isAlive;
+
     public Bird(World world, float x, float y) {
         super(new Texture("Birds/Blue/Idle.png"));
         this.world = world;
@@ -31,6 +33,7 @@ public class Bird extends Sprite{
         bodyDef.position.set(getX() / GameInfo.PPM, getY() / GameInfo.PPM);
 
         body = world.createBody(bodyDef);
+        body.setFixedRotation(false);
 
         CircleShape shape = new CircleShape();
         shape.setRadius((getHeight() / 2) / GameInfo.PPM);
@@ -38,10 +41,20 @@ public class Bird extends Sprite{
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
+        fixtureDef.filter.categoryBits = GameInfo.BIRD;
+        fixtureDef.filter.maskBits = GameInfo.GROUND | GameInfo.PIPE | GameInfo.SCORE;
 
         Fixture fixture = body.createFixture(fixtureDef);
+        fixture.setUserData("Bird");
 
         shape.dispose();
+
+        body.setActive(false);
+    }
+
+    public void activateBird(){
+        isAlive = true;
+        body.setActive(true);
     }
 
     public void birdFlap(){
@@ -54,5 +67,13 @@ public class Bird extends Sprite{
 
     public void updateBird(){
         setPosition(body.getPosition().x * GameInfo.PPM, body.getPosition().y * GameInfo.PPM);
+    }
+
+    public boolean getAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
     }
 }
