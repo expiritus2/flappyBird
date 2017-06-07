@@ -5,14 +5,23 @@ import com.awesome.flappybird.GameMain;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import helpers.GameInfo;
+import scenes.Gameplay;
+import scenes.MainMenu;
 
 public class UIHud {
 
@@ -22,6 +31,8 @@ public class UIHud {
     private Viewport gameViewport;
 
     private Label scoreLabel;
+
+    private ImageButton retryBtn, quitBtn;
 
     private int score;
 
@@ -51,8 +62,37 @@ public class UIHud {
 
         scoreLabel.setPosition(GameInfo.WIDTH / 2f - scoreLabel.getWidth() / 2f,
                 GameInfo.HIGHT / 2f + 200);
+    }
 
+    public void createButtons(){
+        retryBtn = new ImageButton(new SpriteDrawable(new Sprite(
+                new Texture("Buttons/Retry.png"))));
+        quitBtn = new ImageButton(new SpriteDrawable(new Sprite(
+            new Texture("Buttons/Quit.png"))));
 
+        retryBtn.setPosition(GameInfo.WIDTH / 2f - 100,
+                GameInfo.HIGHT / 2f - 50, Align.center);
+        quitBtn.setPosition(GameInfo.WIDTH / 2f + 100f,
+                GameInfo.HIGHT / 2f - 50f, Align.center);
+
+        retryBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new Gameplay(game));
+                stage.dispose();
+            }
+        });
+
+        quitBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new MainMenu(game));
+                stage.dispose();
+            }
+        });
+
+        stage.addActor(retryBtn);
+        stage.addActor(quitBtn);
 
     }
 
@@ -64,6 +104,10 @@ public class UIHud {
     public void showScore(){
         scoreLabel.setText(String.valueOf(score));
         stage.addActor(scoreLabel);
+    }
+
+    public int getScore(){
+        return this.score;
     }
 
     public Stage getStage(){

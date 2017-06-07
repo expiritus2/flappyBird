@@ -132,4 +132,9 @@ public class Pipes {
         return random.nextFloat() * (max - min) + min;
     }
 
+    public void disposeAll(){
+        pipe1.getTexture().dispose();
+        pipe2.getTexture().dispose();
+    }
+
 }

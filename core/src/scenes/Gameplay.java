@@ -3,7 +3,9 @@ package scenes;
 
 import com.awesome.flappybird.GameMain;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -54,6 +56,8 @@ public class Gameplay implements Screen, ContactListener {
     private Array<Pipes> pipesArray = new Array<Pipes>();
     private final int DISTANCE_BETWEEN_PIPES = 150;
 
+    private Sound scoreSound, birdDiedSound, birdFlapSound;
+
     public Gameplay(GameMain game) {
         this.game = game;
 
@@ -81,6 +85,9 @@ public class Gameplay implements Screen, ContactListener {
 
         groundBody = new GroundBody(world, grounds.get(0));
 
+        scoreSound  = Gdx.audio.newSound(Gdx.files.internal("Sounds/Score.mp3"));
+        birdDiedSound  = Gdx.audio.newSound(Gdx.files.internal("Sounds/Dead.mp3"));
+        birdFlapSound  = Gdx.audio.newSound(Gdx.files.internal("Sounds/Fly.mp3"));
 
 
     }
@@ -124,6 +131,7 @@ public class Gameplay implements Screen, ContactListener {
 
     void birdFlap() {
         if (Gdx.input.justTouched()) {
+            birdFlapSound.play();
             bird.birdFlap();
         }
     }
@@ -215,9 +223,22 @@ public class Gameplay implements Screen, ContactListener {
 
     void birdDied(){
         bird.setAlive(false);
+        bird.birdDied();
         stopPipes();
         hud.getStage().clear();
         hud.showScore();
+
+        Preferences prefs = Gdx.app.getPreferences("Data");
+        int highscore = prefs.getInteger("Score");
+
+        if(highscore < hud.getScore()){
+            prefs.putInteger("Score", hud.getScore());
+            prefs.flush();
+        }
+
+
+        hud.createButtons();
+        Gdx.input.setInputProcessor(hud.getStage());
     }
 
     @Override
@@ -237,6 +258,7 @@ public class Gameplay implements Screen, ContactListener {
         drawBackgrouns(game.getBatch());
         drawGrounds(game.getBatch());
         bird.drawIdle(game.getBatch());
+        bird.animateBird(game.getBatch());
 
         drawPipes(game.getBatch());
 
@@ -276,6 +298,23 @@ public class Gameplay implements Screen, ContactListener {
     @Override
     public void dispose() {
 
+        world.dispose();
+
+        for(Sprite bg : backgrounds){
+            bg.getTexture().dispose();
+        }
+
+        for(Sprite ground : grounds){
+            ground.getTexture().dispose();
+        }
+
+        for(Pipes pipe : pipesArray){
+            pipe.disposeAll();
+        }
+
+        scoreSound.dispose();
+        birdFlapSound.dispose();
+        birdDiedSound.dispose();
     }
 
     @Override
@@ -292,6 +331,7 @@ public class Gameplay implements Screen, ContactListener {
 
         if (body1.getUserData() == "Bird" && body2.getUserData() == "Pipe") {
             if(bird.getAlive()){
+                birdDiedSound.play();
                 birdDied();
             }
         }
@@ -299,12 +339,14 @@ public class Gameplay implements Screen, ContactListener {
 
         if (body1.getUserData() == "Bird" && body2.getUserData() == "Ground") {
             if(bird.getAlive()){
+                birdDiedSound.play();
                 birdDied();
             }
         }
 
 
         if (body1.getUserData() == "Bird" && body2.getUserData() == "Score") {
+            scoreSound.play();
             hud.incrementScore();
         }
 
